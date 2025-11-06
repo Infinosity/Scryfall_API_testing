@@ -1,0 +1,18 @@
+[package]
+name = "scryfall_api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Async HTTP client (handles TLS 1.2+ automatically)
+reqwest = { version = "0.12", features = ["json", "gzip", "brotli"] }
+
+# Tokio runtime for async execution
+tokio = { version = "1", features = ["full"] }
+
+# Serde for JSON (de)serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Optional: dotenv for loading an API key from .env (if you need auth later)
+dotenvy = "0.15"
