@@ -6,6 +6,7 @@ use url::form_urlencoded::{byte_serialize};
 use std::io;
 
 
+// Required for Scryfall API
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
 #[derive(Serialize, Deserialize)]
@@ -19,14 +20,15 @@ struct Card {
   toughness: Option<String>,
 }
 
+// Build the client
 fn build_client() -> Result<Client, reqwest_Error> {
-  // Build the client
     let client = reqwest::Client::builder()
       .user_agent(APP_USER_AGENT)
       .build()?;
     Ok(client)
 }
 
+// Takes input from the user, encodes into url format and returns
 fn get_url() -> Result<String, Box<dyn Error>> {  
   println!("Enter a card name: ");
   let mut card_name = String::new();
@@ -36,8 +38,7 @@ fn get_url() -> Result<String, Box<dyn Error>> {
   let card_encoded: String = byte_serialize(card_name.trim().as_bytes()).collect();
   let url: String = format!("https://api.scryfall.com/cards/named?exact={}", card_encoded);
 
-  Ok(url)
-  
+  Ok(url)  
 }
 
 #[tokio::main]
