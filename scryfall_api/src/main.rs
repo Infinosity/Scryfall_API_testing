@@ -2,6 +2,8 @@ use reqwest::Client;
 use reqwest::Error as reqwest_Error;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use url::form_urlencoded::{byte_serialize};
+use std::io;
 
 
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -13,8 +15,8 @@ struct Card {
   cmc: f32,
   type_line: String,
   oracle_text: String,
-  power: String,
-  toughness: String,
+  power: Option<String>,
+  toughness: Option<String>,
 }
 
 fn build_client() -> Result<Client, reqwest_Error> {
@@ -25,13 +27,28 @@ fn build_client() -> Result<Client, reqwest_Error> {
     Ok(client)
 }
 
+fn get_url() -> Result<String, Box<dyn Error>> {  
+  println!("Enter a card name: ");
+  let mut card_name = String::new();
+
+  io::stdin().read_line(&mut card_name)?;
+
+  let card_encoded: String = byte_serialize(card_name.trim().as_bytes()).collect();
+  let url: String = format!("https://api.scryfall.com/cards/named?exact={}", card_encoded);
+
+  Ok(url)
+  
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let client = build_client()?;
 
+    let url = get_url()?;
+
     // Perform the request
     let response = client
-        .get("https://api.scryfall.com/cards/named?exact=ureni+of+the+unwritten")
+        .get(url)
         .send()
         .await?;
 
@@ -39,7 +56,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Status: {}", response.status());
     let json= response.text().await?;
     let c: Card = serde_json::from_str(&json)?;
-    println!("Name: {}", c.name);
+    println!("Name: {}\nMana Cost: {}\nText: {}", c.name, c.mana_cost, c.oracle_text);
+    //not sure how to do this yet
+    // if (c.power) {
+    //   print!("Power/Toughness: {}/{}", c.power, c.toughness);
+    // }
 
     Ok(())
     
