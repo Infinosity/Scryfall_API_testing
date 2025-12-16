@@ -6,5 +6,6 @@ edition = "2024"
 [dependencies]
 iced = "0.14.0"
 iced_test = "0.14.0"
+url = "2.5.7"
 
 
