@@ -3,7 +3,10 @@ use iced::widget::{button, column, text, text_input};
 use iced::{Element};
 use iced::theme::Theme;
 use iced::Renderer;
-use url::form_urlencoded::{byte_serialize};
+use std::error::Error;
+
+mod api_intf;
+//pub use crate::api_intf;
 
 // Main ///////////////////////
 pub fn main() -> iced::Result {
@@ -15,7 +18,7 @@ pub fn main() -> iced::Result {
 struct State {
     value: i64,
     user_input: String,
-    card_name: String,
+    card_info: api_intf::Card,
 }
 
 // Messages ///////////////////
@@ -25,6 +28,12 @@ enum Message {
     Decrement,
     Fetch,
     InputChanged(String),
+    FetchFinished(Result<(), Box<dyn Error>>),
+}
+
+async fn api_call (n: &str, c: &mut api_intf::Card) -> Result<(), Box<dyn Error>> {
+    api_intf::fetch_card(n, c).await?;
+    Ok(())
 }
 
 impl State {
@@ -38,12 +47,14 @@ impl State {
                 self.value -=1;
             }
             Message::Fetch => {
-                if !self.user_input.is_empty() {
-                    self.card_name = byte_serialize(self.user_input.trim().as_bytes()).collect();
+                if !self.user_input.trim().is_empty() {     
+                    return none();                                                                    
                 }
             }
             Message::InputChanged(user_input) => {
                 self.user_input = user_input;
+            }
+            Message::Done => {
             }
         }
     }
@@ -53,7 +64,7 @@ impl State {
     fn view(&self) -> Element<'_, Message> {
         column![
             button("Increment").on_press(Message::Increment),
-            text(&self.card_name).size(50),
+            text(&self.card_info.name).size(50),
             button("Decrement").on_press(Message::Decrement),
             button("Fetch").on_press(Message::Fetch),
             text_input::<Message, Theme, Renderer>("Enter a card name...", &self.user_input).id("text-input").on_input(Message::InputChanged),
@@ -74,7 +85,7 @@ mod tests {
 
     #[test]
     fn it_counts() -> Result<(), Error> {
-        let mut counter = State { value: 0, user_input: "Enter a card name...".to_string(), card_name: "card_name".to_string() };
+        let mut counter = State { value: 0, user_input: "Enter a card name...".to_string(), card_info: api_intf::Card::default() };
         let mut ui = simulator(counter.view());
 
         let _ = ui.click("Increment")?;
@@ -95,7 +106,7 @@ mod tests {
 
     #[test]
     fn text_works() -> Result<(), Error> {
-        let mut state = State {value: 0, user_input: "".to_string(), card_name: "card_name".to_string()};
+        let mut state = State {value: 0, user_input: "".to_string(), card_info: api_intf::Card::default()};
         let mut ui = simulator(state.view());
 
         let _ = ui.click(id("text-input"))?;
