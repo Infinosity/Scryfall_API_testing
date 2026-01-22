@@ -8,7 +8,7 @@ fn main() -> iced::Result {
     iced::application(State::default, State::update, State::view).run()
 }
 
-// This should have only they elements of the app that change
+// State should have only they elements of the app that change
 #[derive(Debug, Default)]
 struct State {
     user_input: String,
@@ -66,7 +66,7 @@ impl State {
             image_or_placeholder,         
             text(&self.card_data.name).size(30),
             text(&self.card_data.oracle_text).size(20),
-            text_input::<Message, Theme, Renderer>("Enter a card name...", &self.user_input).id("text-input").on_input(Message::InputChanged),
+            text_input::<Message, Theme, Renderer>("Enter a card name...", &self.user_input).id("text-input").on_input(Message::InputChanged).on_submit(Message::Fetch),
             button("Search").on_press(Message::Fetch),            
         ].into()
     }
