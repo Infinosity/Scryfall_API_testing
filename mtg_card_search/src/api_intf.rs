@@ -3,7 +3,7 @@ use reqwest::Client;
 use url::form_urlencoded::{byte_serialize};
 use anyhow::Result;
 use iced::widget::image::Handle;
-use std::sync::Arc;
+use std::{sync::Arc, fs};
 
 // Required for Scryfall API
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -47,6 +47,7 @@ pub async fn fetch_card (card_name: String) -> Result<Card> {
   // Print info
   println!("Status: {}", response.status());
   let json= response.text().await?;
+  fs::write("card-data.json", &json)?; //write JSON here
   let mut card: Card = serde_json::from_str(&json)?;
   if let Some(url) = card.image_uris.png.clone() {
     match download_image_handle(client.clone(), url).await {
