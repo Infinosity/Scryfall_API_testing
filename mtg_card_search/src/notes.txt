@@ -1,0 +1,3 @@
+Next steps:
+Add scrollable area for additional printings
+    potentially add small image display while hovering
